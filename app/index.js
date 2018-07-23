@@ -8,6 +8,7 @@ export default class App extends React.Component {
     state = {
         count: 1,
         message: 'a',
+        // chatMessage: [],
     }
 
     constructor() {
@@ -17,6 +18,7 @@ export default class App extends React.Component {
 
         this.socket.on('update', () => this.setState({ count: this.state.count + 1 }))
         // this.socket.on('update', () => this.setState(prevState => { count: prevState.count + 1 }))
+        // this.socket.on('chat message', () => this.setState({ chatMessage: msg }))
     }
 
     message = (text) => {
@@ -41,6 +43,9 @@ export default class App extends React.Component {
             <View style={styles.container}>
                 <View style={{ flex: 4, alignItems: 'center', justifyContent: 'center' }}>
                     <Text>Count, {this.state.count}</Text>
+                    {/* <View>
+                        {this.state.chatMessage}
+                    </View> */}
                 </View>
 
                 <View style={{ flex: 1, justifyContent: 'flex-end', }}>
@@ -70,6 +75,5 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#fff',
-
     },
 });

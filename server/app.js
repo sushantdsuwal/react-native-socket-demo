@@ -21,6 +21,13 @@ io.on('connection', function (socket) {
     //chat message
     socket.on('chat message', function (msg) {
         console.log('message: ' + msg)
-    })
+    });
+
+    //broadcasting to all users
+    io.emit('some event', { for: 'everyone' });
+
+    socket.on('chat message', function (msg) {
+        io.emit('chat message', msg)
+    });
 });
 
