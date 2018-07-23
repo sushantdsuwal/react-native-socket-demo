@@ -3,17 +3,11 @@
 <script src="/socket.io/socket.io.js"></script>
 
 <script>
-    var socket = io.connect('http://localhost');
+    var socket = io.connect('http://localhost:8000');
 
     var button = document.querySelector('button');
     button.onclick = function () {
-        console.log('client socket is working');
         socket.emit('update');
+        console.log('client socket is working');
     }
-        // socket.on('news', function (data) {
-        //     console.log(data);
-        //     socket.emit('my other event', { my: 'data' });
-        // });
-
-
 </script>
