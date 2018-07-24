@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View, TextInput, Button } from 'react-native';
+import { StyleSheet, Text, View, TextInput, Button, FlatList } from 'react-native';
 window.navigator.userAgent = 'react-native';
 import io from 'socket.io-client/dist/socket.io';
 
@@ -8,7 +8,7 @@ export default class App extends React.Component {
     state = {
         count: 1,
         message: 'a',
-        // chatMessage: [],
+        chatMessage: []
     }
 
     constructor() {
@@ -18,7 +18,13 @@ export default class App extends React.Component {
 
         this.socket.on('update', () => this.setState({ count: this.state.count + 1 }))
         // this.socket.on('update', () => this.setState(prevState => { count: prevState.count + 1 }))
-        // this.socket.on('chat message', () => this.setState({ chatMessage: msg }))
+        // this.socket.on('chat message', (msg) => this.setState({ chatMessage: msg }))
+        // this.socket.on('chat message', (msg) => this.setState(prevState => ({ chatMessage: [...prevState.chatMessage, ...msg] })));
+        this.socket.on('chat message', (msg) => {
+            const newMessage = this.state.chatMessage.concat(msg);
+            this.setState({ chatMessage: newMessage })
+        });
+
     }
 
     message = (text) => {
@@ -29,6 +35,11 @@ export default class App extends React.Component {
 
     }
 
+    componentWillUpdate = (nextProps, nextState) => {
+
+    };
+
+
     sndMessage = () => {
         const socket = io('http://localhost:8000', { jsonp: false });
 
@@ -36,16 +47,27 @@ export default class App extends React.Component {
         if (this.state.message == '') {
             return false;
         }
-    }
+    };
+
+    _renderItem = ({ item }) => (
+        <Text>{item}</Text>
+    );
+
+    _keyExtractor = (item, index) => index.toString();
 
     render() {
         return (
             <View style={styles.container}>
                 <View style={{ flex: 4, alignItems: 'center', justifyContent: 'center' }}>
                     <Text>Count, {this.state.count}</Text>
-                    {/* <View>
-                        {this.state.chatMessage}
-                    </View> */}
+
+                    <FlatList
+                        data={this.state.chatMessage}
+                        extraData={this.state}
+                        keyExtractor={this._keyExtractor}
+                        renderItem={this._renderItem}
+                    />
+
                 </View>
 
                 <View style={{ flex: 1, justifyContent: 'flex-end', }}>
@@ -73,6 +95,8 @@ export default class App extends React.Component {
 
 const styles = StyleSheet.create({
     container: {
+        marginTop: 50,
+        margin: 10,
         flex: 1,
         backgroundColor: '#fff',
     },
