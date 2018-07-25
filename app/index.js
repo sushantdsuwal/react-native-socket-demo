@@ -1,7 +1,10 @@
 import React from 'react';
-import { StyleSheet, Text, View, TextInput, Button, FlatList } from 'react-native';
+import { StyleSheet, Text, View, TextInput, Button, FlatList, AppState } from 'react-native';
 window.navigator.userAgent = 'react-native';
 import io from 'socket.io-client/dist/socket.io';
+import PushNotification from 'react-native-push-notification';
+
+import PushController from './PushController';
 
 
 export default class App extends React.Component {
@@ -17,9 +20,6 @@ export default class App extends React.Component {
         this.socket = io('http://localhost:8000', { jsonp: false });
 
         this.socket.on('update', () => this.setState({ count: this.state.count + 1 }))
-        // this.socket.on('update', () => this.setState(prevState => { count: prevState.count + 1 }))
-        // this.socket.on('chat message', (msg) => this.setState({ chatMessage: msg }))
-        // this.socket.on('chat message', (msg) => this.setState(prevState => ({ chatMessage: [...prevState.chatMessage, ...msg] })));
         this.socket.on('chat message', (msg) => {
             const newMessage = this.state.chatMessage.concat(msg);
             this.setState({ chatMessage: newMessage })
@@ -32,13 +32,27 @@ export default class App extends React.Component {
     }
 
     componentDidMount() {
+        AppState.addEventListener('change', this._handleAppStateChange);
 
+    }
+
+    componentWillUnmount() {
+        AppState.addEventListener('change', this._handleAppStateChange);
     }
 
     componentWillUpdate = (nextProps, nextState) => {
 
     };
 
+    _handleAppStateChange(appState) {
+        if (appState === 'background') {
+            PushNotification.localNotification({
+                message: "My notification message",
+                date: new Date(Date.now() + (5 * 1000).toString())
+            })
+        }
+
+    }
 
     sndMessage = () => {
         const socket = io('http://localhost:8000', { jsonp: false });
@@ -60,6 +74,8 @@ export default class App extends React.Component {
             <View style={styles.container}>
                 <View style={{ flex: 4, alignItems: 'center', justifyContent: 'center' }}>
                     <Text>Count, {this.state.count}</Text>
+
+                    <PushController />
 
                     <FlatList
                         data={this.state.chatMessage}
@@ -88,6 +104,7 @@ export default class App extends React.Component {
 
                     </View>
                 </View>
+
             </View>
         );
     }
