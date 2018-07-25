@@ -10,8 +10,9 @@ import PushController from './PushController';
 export default class App extends React.Component {
     state = {
         count: 1,
-        message: 'a',
-        chatMessage: []
+        message: '',
+        chatMessage: [],
+        notification: '',
     }
 
     constructor() {
@@ -19,13 +20,27 @@ export default class App extends React.Component {
 
         this.socket = io('http://localhost:8000', { jsonp: false });
 
+        this.socket.on('notification', (notificationMsg) => this.setState({ notification: notificationMsg }));
         this.socket.on('update', () => this.setState({ count: this.state.count + 1 }))
         this.socket.on('chat message', (msg) => {
             const newMessage = this.state.chatMessage.concat(msg);
             this.setState({ chatMessage: newMessage })
         });
 
+        this.socket.on('notification', (notificationMsg) => {
+            PushNotification.localNotification({
+                title: notificationMsg,
+                message: notificationMsg,
+                foreground: true,
+                userInteraction: true,
+                date: new Date(Date.now() + (2 * 1000))
+            });
+
+        });
+
     }
+
+
 
     message = (text) => {
         this.setState({ message: text })
@@ -34,15 +49,13 @@ export default class App extends React.Component {
     componentDidMount() {
         AppState.addEventListener('change', this._handleAppStateChange);
 
+
+
     }
 
     componentWillUnmount() {
         AppState.addEventListener('change', this._handleAppStateChange);
     }
-
-    componentWillUpdate = (nextProps, nextState) => {
-
-    };
 
     _handleAppStateChange(appState) {
         if (appState === 'background') {
@@ -51,7 +64,6 @@ export default class App extends React.Component {
                 date: new Date(Date.now() + (5 * 1000).toString())
             })
         }
-
     }
 
     sndMessage = () => {
@@ -76,6 +88,12 @@ export default class App extends React.Component {
                     <Text>Count, {this.state.count}</Text>
 
                     <PushController />
+
+                    <View>
+                        <Text>{this.state.notification}</Text>
+                    </View>
+
+                    <View style={{ marginBottom: 15 }} />
 
                     <FlatList
                         data={this.state.chatMessage}
